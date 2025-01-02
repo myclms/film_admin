@@ -72,4 +72,4 @@ class UserinfoeditForm(BootstrapModelForm):
 class FilmForm(BootstrapModelForm):
     class Meta:
         model = models.Film
-        fields = ["name", "year", "types", "nationality", "cover", "score", "comment",]
+        fields = ["name", "year", "types", "nationality", "cover", "score", "comment", "directors", "actors",]
