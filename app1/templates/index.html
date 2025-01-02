@@ -2,6 +2,45 @@
 
 {% block content %}
   <div class="row row-cols-1 row-cols-md-1 g-4">筛选</div>
+  <hr />
+  <div class="d-flex w-100 justify-content-between">
+    <h3 class="mb-1">我的电影</h3>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addfilm">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+      </svg>
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addfilm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">添加新电影</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="post">
+              {% csrf_token %}
+              {% for field in form %}
+                <div class="form-floating" style="margin-bottom: 10px;">
+                  {{ field }}
+                  <label>{{ field.label }}</label>
+                  <span style="color: red;">{{ field.errors.0 }}</span>
+                </div>
+              {% endfor %}
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">确定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr />
   <div class="row row-cols-1 row-cols-md-5 g-4">
     {% for film in filmset %}
       <div class="col">

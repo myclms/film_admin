@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from app1.views import main, user
+from app1.views import main, user, lovedir
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,9 +25,14 @@ urlpatterns = [
     path('register/', user.register),
     path('userinfoedit/', user.userinfoedit),
     path('logout/', user.logout),
+
+    path('dirs/', lovedir.dirs),
+    path('dirfilms/<int:dirid>/', lovedir.dirfilms),
+    path('add/dir/', lovedir.adddir),
+    path('delete/dir/<int:dirid>/', lovedir.deletedir),
+    path('edit/dirname/', lovedir.editdirname),
     
     path('index/', main.index),
     path('statistics/', main.statistics),
-    path('dirs/', main.dirs),
     
 ]

@@ -1,5 +1,99 @@
 {% extends 'layout.html' %}
 
+{% block css %}
+  <style>
+    small {
+      color: grey;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
-  <h1>我的收藏夹</h1>
+  <div class="d-flex w-100 justify-content-between">
+    <h3 class="mb-1">我的收藏夹</h3>
+    <span class="d-flex">
+      <form class="d-flex" method="post">
+        {% csrf_token %}
+        <input name="name" class="form-control me-2" type="search" placeholder="搜索" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#adddir" style="margin-left: 1rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder-plus" viewBox="0 0 16 16">
+          <path d="m.5 3 .04.87a2 2 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2m5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19q-.362.002-.683.12L1.5 2.98a1 1 0 0 1 1-.98z" />
+          <path d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 0 1 0-1H13V9.5a.5.5 0 0 1 .5-.5" />
+        </svg>
+      </button>
+
+      <!-- Modal -->
+      <div class="modal fade" id="adddir" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">添加新收藏夹</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div style="margin-bottom: 10px;">
+                <input class="form-control" type="text" id="add_input" placeholder="收藏夹名称" />
+                <span style="color: red; margin-top: 10px;" id="error1"></span>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary" id="add_confirm">确定</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </span>
+  </div>
+  <hr />
+  <div class="list-group">
+    {% for dir in dirs %}
+      <a href="/dirfilms/{{ dir.id }}/" class="list-group-item list-group-item-action col-10" aria-current="true" style="z-index: 0;">
+        <div class="d-flex w-90 justify-content-between">
+          <h5 class="mb-1">{{ dir.name }}</h5>
+          {% if dir.cnt == null %}
+            <small>0</small>
+          {% else %}
+            <small>{{ dir.cnt }}</small>
+          {% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block js %}
+  <script type="text/javascript">
+    $(function () {
+      add_dir();
+    })
+    function add_dir() {
+      $('#add_confirm').click(function () {
+        $('#error1').text('')
+        $.ajax({
+          url: '/add/dir/',
+          type: 'post',
+          dataType: 'JSON',
+          data: {
+            name: $('#add_input').val()
+          },
+          success: function (res) {
+            if (res.status == 'error') {
+              $('#error1').text(res.msg)
+            } else {
+              location.reload()
+            }
+          }
+        })
+      })
+    }
+  </script>
 {% endblock %}

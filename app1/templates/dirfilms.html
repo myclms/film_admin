@@ -1,0 +1,90 @@
+{% extends 'layout.html' %}
+
+{% block css %}
+  <style>
+    small {
+      color: grey;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="d-flex w-100 justify-content-between">
+    <h3 class="mb-1">{{ dirname }}</h3>
+    <span class="d-flex">
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editdirname" style="margin-left: 1rem;">
+        修改名称
+      </button>
+
+      <!-- Modal -->
+      <div class="modal fade" id="editdirname" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">修改收藏夹名称</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div style="margin-bottom: 10px;">
+                <input class="form-control" type="text" id="editdirname_input" placeholder="收藏夹名称" />
+                <span style="color: red; margin-top: 10px;" id="error1"></span>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary" id="editdirname_confirm">确定</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a style="margin-left: 1rem;" class="btn btn-danger" href="/delete/dir/{{dirid}}/">
+        删除收藏夹
+      </a>
+    </span>
+  </div>
+  <hr />
+  <div class="row row-cols-1 row-cols-md-5 g-4">
+    {% for film in filmset %}
+      <div class="col">
+        <div class="card h-100">
+          <img src="{{ film.cover }}" class="card-img-top" alt="..." />
+          <div class="card-body">
+            <h5 class="card-title">{{ film.name }}</h5>
+            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block js %}
+  <script type="text/javascript">
+    $(function () {
+      edit_dir_name();
+    })
+    function edit_dir_name() {
+      $('#editdirname_confirm').click(function () {
+        $('#error1').text('')
+        $.ajax({
+          url: '/edit/dirname/',
+          type: 'post',
+          dataType: 'JSON',
+          data: {
+            dirid: {{ dirid }},
+            name: $('#editdirname_input').val(),
+          },
+          success: function (res) {
+            console.log(res)
+            if (res.status == 'error') {
+              $('#error1').text(res.msg)
+            } else {
+              location.reload()
+            }
+          }
+        })
+      })
+    }
+  </script>
+{% endblock %}

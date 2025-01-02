@@ -86,3 +86,22 @@ class UserinfoeditForm(BootstrapModelForm):
                 raise ValidationError("密码错误")
             raise ValidationError("两次输入密码不一致")
         return confirm 
+    
+class FilmForm(BootstrapModelForm):
+    class Meta:
+        model = models.Film
+        fields = ["name", "year", "types", "nationality", "cover"]
+
+class CommentForm(BootstrapModelForm):
+    class Meta:
+        model = models.Comment
+        fields = ["score", "comment"]
+
+        widgets = {
+            "comment":forms.Textarea,
+        }
+
+class DirAddForm(BootstrapModelForm):
+    class Meta:
+        model = models.LoveDir
+        fields = "__all__"
