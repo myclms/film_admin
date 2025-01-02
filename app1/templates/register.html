@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>注册</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrapmini5.1/bootstrap.css' %}" />
+
+    <style>
+      .link {
+        margin-top: 5px;
+        color: grey;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="d-flex justify-content-center" style="height: 100vh;">
+      <div class="col-2" style="margin-top: 20vh;">
+        <form method="post">
+          {% csrf_token %}
+          <h1 class="h3 mb-3 fw-normal text-center">用户注册</h1>
+    
+          {% for field in form %}
+            <div class="form-floating" style="margin-bottom: 10px;">
+              {{ field }}
+              <label>{{ field.label }}</label>
+              <span style="color: red;">{{ field.errors.0 }}</span>
+            </div>
+          {% endfor %}
+
+          <button class="w-100 btn btn-lg btn-primary" type="submit" style="margin-top: 10px;">注册</button>
+          <p class="text-center">
+            <a class="link" href="..">已有账号？去登录</a>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <script src="{% static 'plugins/bootstrapmini5.1/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+  </body>
+</html>
