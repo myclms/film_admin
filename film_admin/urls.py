@@ -31,6 +31,10 @@ urlpatterns = [
     path('add/dir/', lovedir.adddir),
     path('delete/dir/<int:dirid>/', lovedir.deletedir),
     path('edit/dirname/', lovedir.editdirname),
+    path('add/film/', lovedir.addfilm),
+    path('delete/film/', lovedir.deletefilm),
+    path('edit/film/<int:filmid>/', lovedir.editfilm),
+    path('search/film/', lovedir.searchfilm),
     
     path('index/', main.index),
     path('statistics/', main.statistics),

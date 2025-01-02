@@ -11,6 +11,15 @@
 {% block content %}
   <div class="d-flex w-100 justify-content-between">
     <h3 class="mb-1">{{ dirname }}</h3>
+    <form class="d-flex" method="post">
+      {% csrf_token %}
+      <input name="name" class="form-control me-2" type="search" placeholder="搜索" aria-label="Search" value="{{ filmname }}">
+      <button class="btn btn-outline-success" type="submit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+        </svg>
+      </button>
+    </form>
     <span class="d-flex">
       <!-- Button trigger modal -->
       <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editdirname" style="margin-left: 1rem;">
@@ -18,11 +27,11 @@
       </button>
 
       <!-- Modal -->
-      <div class="modal fade" id="editdirname" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal fade" id="editdirname" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">修改收藏夹名称</h5>
+              <h5 class="modal-title" id="exampleModalLabel1">修改收藏夹名称</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -38,20 +47,57 @@
           </div>
         </div>
       </div>
+
       <a style="margin-left: 1rem;" class="btn btn-danger" href="/delete/dir/{{dirid}}/">
         删除收藏夹
       </a>
+
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addfilm" style="margin-left: 1rem;">
+        添加电影
+      </button>
+
+      <!-- Modal -->
+      <div class="modal fade" id="addfilm" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel2">添加电影</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form method="post" action="/add/film/" id="addfilmform">
+                {% for field in filmform %}
+                  <div class="form-floating" style="margin-bottom: 10px;">
+                    {{ field }}
+                    <label>{{ field.label }}</label>
+                  </div>
+                {% endfor %}
+              </form>
+              <span style="color: red;" id="error2"></span>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary" id="addfilm_confirm">确定</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </span>
   </div>
   <hr />
   <div class="row row-cols-1 row-cols-md-5 g-4">
-    {% for film in filmset %}
+    {% for filmid in filmset %}
       <div class="col">
         <div class="card h-100">
-          <img src="{{ film.cover }}" class="card-img-top" alt="..." />
+          <img src="{{ filmid.film.cover }}" class="card-img-top" alt="{{ filmid.film.name }}" />
           <div class="card-body">
-            <h5 class="card-title">{{ film.name }}</h5>
-            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+            <h5 class="card-title">{{ filmid.film.name }}</h5>
+            <p class="card-text">{{ filmid.film.year }}  {{ filmid.film.nationality }}</p>
+            <p class="card-text">{{ filmid.film.types }}</p>
+            <div style="float: right;">
+              <a type="button" class="btn btn-outline-warning" href="/edit/film/{{filmid.film.id}}/">编辑</a>
+              <button type="button" class="btn btn-outline-danger delete_film" filmid="{{filmid.film.id}}">删除</button>
+            </div>
           </div>
         </div>
       </div>
@@ -63,10 +109,12 @@
   <script type="text/javascript">
     $(function () {
       edit_dir_name();
+      add_film();
+      delete_film();
     })
     function edit_dir_name() {
       $('#editdirname_confirm').click(function () {
-        $('#error1').text('')
+        $('#error2').text('')
         $.ajax({
           url: '/edit/dirname/',
           type: 'post',
@@ -76,9 +124,50 @@
             name: $('#editdirname_input').val(),
           },
           success: function (res) {
-            console.log(res)
             if (res.status == 'error') {
-              $('#error1').text(res.msg)
+              $('#error2').text(res.msg)
+            } else {
+              location.reload()
+            }
+          }
+        })
+      })
+    }
+
+    function add_film() {
+      $("#addfilm_confirm").click(function () {
+        $('#error2').text('')
+        $.ajax({
+          url: '/add/film/',
+          type: 'post',
+          dataType: 'JSON',
+          data: {
+            dirid: {{ dirid }},
+            formdata: $('#addfilmform').serialize(),
+          },
+          success: function (res) {
+            if (res.status == 'error') {
+              $('#error2').text(res.msg)
+            } else {
+              location.reload()
+            }
+          }
+        })
+      })
+    }
+
+    function delete_film() {
+      $(".delete_film").click(function () {
+        $.ajax({
+          url: '/delete/film/',
+          type: 'post',
+          dataType: 'JSON',
+          data: {
+            filmid: $(this).attr("filmid"),
+          },
+          success: function (res) {
+            if (res.status == 'error') {
+              alert("删除失败");
             } else {
               location.reload()
             }

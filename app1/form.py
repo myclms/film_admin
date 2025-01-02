@@ -16,15 +16,6 @@ class RegisterForm(BootstrapModelForm):
         widgets = {
             "password": forms.PasswordInput(render_value=True),
         }
-
-    def clean_age(self):
-        age = self.cleaned_data.get("age")
-        if not age:
-            return age
-        if age <= 0:
-           raise ValidationError("年龄不能小于0")
-
-        return age
     
     def clean_password(self):
         password = md5(self.cleaned_data.get("password"))
@@ -61,15 +52,6 @@ class UserinfoeditForm(BootstrapModelForm):
         widgets = {
             "password": forms.PasswordInput(render_value=True),
         }
-
-    def clean_age(self):
-        age = self.cleaned_data.get("age")
-        if not age:
-            return age
-        if age <= 0:
-           raise ValidationError("年龄不能小于0")
-
-        return age
     
     def clean_password(self):
         password = self.cleaned_data.get("password")
@@ -90,18 +72,4 @@ class UserinfoeditForm(BootstrapModelForm):
 class FilmForm(BootstrapModelForm):
     class Meta:
         model = models.Film
-        fields = ["name", "year", "types", "nationality", "cover"]
-
-class CommentForm(BootstrapModelForm):
-    class Meta:
-        model = models.Comment
-        fields = ["score", "comment"]
-
-        widgets = {
-            "comment":forms.Textarea,
-        }
-
-class DirAddForm(BootstrapModelForm):
-    class Meta:
-        model = models.LoveDir
-        fields = "__all__"
+        fields = ["name", "year", "types", "nationality", "cover", "score", "comment",]
