@@ -58,3 +58,7 @@ def register(request):
         return redirect('/index/')
 
     return render(request, 'register.html', {"form":form})
+
+def logout(request):
+    request.session.clear()
+    return redirect('/login/')
