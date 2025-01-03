@@ -1,5 +1,60 @@
 {% extends 'layout.html' %}
+{% load static %}
 
 {% block content %}
   <h1>统计面板</h1>
+  <div id="main" style="width: 600px;height:400px;"></div>
 {% endblock %}
+{% comment %} 柱状图 ： 年代，类型，拍摄国家 -- 数量 {% endcomment %}
+{% block js %}
+<script src="{% static "js/echarts.js" %}"></script>
+<script type="text/javascript">
+  // 基于准备好的dom，初始化echarts实例
+  var Bar_year = echarts.init(document.getElementById('main'));
+
+  // 指定图表的配置项和数据
+  var Bar_option = {
+    title: {
+      text: '' //
+    },
+    tooltip: {},
+    legend: {
+      data: ['数量']
+    },
+    xAxis: {
+      data: [] // 
+    },
+    yAxis: {},
+    series: [
+      {
+        name: '数量',
+        type: 'bar',
+        data: [] //
+      }
+    ]
+  };
+
+  $(function(){
+    init_bar_year();
+  })
+
+  function init_bar_year() {
+    $.ajax({
+      url: '/bar/',
+      type: 'get',
+      dataType: 'JSON',
+      data: {
+        x: "year",
+      },
+      success: function (res) {
+        Bar_option.title.text = res.title;
+        Bar_option.xAxis.data = res.xAxis;
+        Bar_option.series[0].data = res.cnt_list
+        Bar_year.setOption(Bar_option);
+      }
+    })
+  }
+
+  
+</script>
+{% endblock js %}

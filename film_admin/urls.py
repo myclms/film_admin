@@ -40,5 +40,5 @@ urlpatterns = [
     path('delete/film/all/', index.deletefilmall),
 
     path('statistics/', statistics.statistics),
-    
+    path('bar/', statistics.bar),
 ]
