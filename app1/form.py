@@ -44,7 +44,7 @@ class LoginForm(BootstrapForm):
 
 
 class UserinfoeditForm(BootstrapModelForm):
-    confirm = forms.CharField(max_length=32, label="确认密码/密码验证",widget=forms.PasswordInput(render_value=True))
+    confirm = forms.CharField(max_length=32, label="输入用户密码",widget=forms.PasswordInput(render_value=True))
     class Meta:
         model = models.User
         fields = ["name", "password", "confirm", "age", "gender",]

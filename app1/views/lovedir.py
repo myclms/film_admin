@@ -8,19 +8,29 @@ from urllib import parse
 
 from app1 import models
 from app1.form import FilmForm
-from app1.utils.funcs import get_uname, get_lovedirs
+from app1.utils.funcs import get_uname, get_lovedirs, get_uid
 
 
 
 def dirs(request):
-    # list
+    # list and search
     name = get_uname(request)
     if request.method == 'GET':
         dirs = get_lovedirs(request)
-        return render(request, 'dirs.html', {'name':name, 'dirs':dirs})
+        cnt_res_set = models.Include.objects.values('dir_id').filter(dir_id__in = dirs).annotate(cnt = Count('id'))
+        # 不在分组查询结果里的全部置0,其余根据结果覆盖原来的值
+        dir_ids = []
+        for cnt_res in cnt_res_set:
+            dir_id = cnt_res['dir_id']
+            dir_ids.append(dir_id)
+            cnt = cnt_res['cnt']
+            models.LoveDir.objects.filter(id = dir_id).update(cnt = cnt)
+        models.LoveDir.objects.exclude(id__in = dir_ids).update(cnt = 0)
+        
+        return render(request, 'dirs.html', {'name':name, 'dirs':dirs,})
     
     name = request.POST.get("name")
-    dirs = models.LoveDir.objects.filter(name__icontains = name)
+    dirs = models.LoveDir.objects.filter(owner_id = get_uid(request)).filter(name__icontains = name)
     return render(request, 'dirs.html', {'name':name, 'dirs':dirs, 'dirname':name,})
 
 @csrf_exempt 
@@ -113,11 +123,11 @@ def addfilm(request):
         filmform = FilmForm(dir_choices, data = form_data)
         if filmform.is_valid():
             dir_objs = filmform.cleaned_data.get("lovedir", [])
-            # LoveDir
-            try:
-                dir_objs.update(cnt = F('cnt')+1)
-            except:
-                dir_objs.update(cnt = 1)
+            # # LoveDir
+            # try:
+            #     dir_objs.update(cnt = F('cnt')+1)
+            # except:
+            #     dir_objs.update(cnt = 1)
             # Film
             filmform.save()
             # Include
@@ -154,8 +164,8 @@ def deletefilm(request):
         try:
             filmid = request.POST.get("filmid")
             dirid = request.POST.get("dirid")
-            # LoveDir
-            models.LoveDir.objects.filter(id = dirid).update(cnt = F('cnt')-1)
+            # # LoveDir
+            # models.LoveDir.objects.filter(id = dirid).update(cnt = F('cnt')-1)
             # Include
             models.Include.objects.filter(film_id = filmid, dir_id = dirid).delete()
             # Film
@@ -192,12 +202,12 @@ def editfilm(request, filmid):
         for initial_id in new_initial_ids:
             if initial_id not in initial_ids:
                 models.Include.objects.create(dir_id = initial_id, film_id = filmid)
-                models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")+1)
+                # models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")+1)
         # 删除 len(new_initial_ids)不会为0
         for initial_id in initial_ids:
             if initial_id not in new_initial_ids:
                 models.Include.objects.filter(dir_id = initial_id, film_id = filmid).delete()
-                models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")-1)
+                # models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")-1)
 
         # Film
         filmform.save()

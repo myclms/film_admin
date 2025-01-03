@@ -111,7 +111,7 @@
 
     function delete_film() {
       $(".delete_film").click(function () {
-        $("#deletefilm").attr("filmid") = $(this).attr("filmid");
+        $("#deletefilm").attr("filmid", $(this).attr("filmid"));
       })
       $("#deletefilm").click(function () {
         $.ajax({
