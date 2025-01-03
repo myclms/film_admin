@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
 
 from app1 import models
-from app1.form import RegisterForm, UserinfoeditForm, LoginForm
+from app1.form import RegisterForm, UserinfoeditForm, LoginForm, UserpasswordeditForm
+from app1.utils.funcs import get_uid
 
 
 def userinfoedit(request):
-    uid = request.session.get('info').get('id')
+    uid = get_uid(request)
     obj = models.User.objects.filter(id=uid).first()
     name = obj.name
     if request.method == 'GET':
@@ -18,6 +19,22 @@ def userinfoedit(request):
         obj = models.User.objects.filter(id=uid).first()
         name = obj.name
         return render(request, 'userinfo.html', {'name':name, 'form':form})
+
+    return render(request, 'userinfo.html', {'name':name, 'form':form})
+
+def userpasswordedit(request):
+    uid = get_uid(request)
+    obj = models.User.objects.filter(id=uid).first()
+    name = obj.name
+    if request.method == 'GET':
+        form = UserpasswordeditForm(instance=obj)
+        return render(request, 'userinfo.html', {'name':name, 'form':form})
+    
+    form = UserpasswordeditForm(data=request.POST, instance=obj)
+    if form.is_valid():
+        models.User.objects.filter(id = uid).update(password = form.cleaned_data.get("new"))
+        request.session.clear()
+        return redirect('/')
 
     return render(request, 'userinfo.html', {'name':name, 'form':form})
 

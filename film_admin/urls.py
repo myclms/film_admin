@@ -25,6 +25,7 @@ urlpatterns = [
     path('register/', user.register),
     path('userinfoedit/', user.userinfoedit),
     path('logout/', user.logout),
+    path('userpasswordedit/', user.userpasswordedit),
 
     path('dirs/', lovedir.dirs),
     path('dirfilms/<int:dirid>/', lovedir.dirfilms),

@@ -43,8 +43,34 @@ class LoginForm(BootstrapForm):
         return password
 
 
+class UserpasswordeditForm(BootstrapModelForm):
+    password = forms.CharField(max_length=64, label="原密码",widget=forms.PasswordInput(render_value=True))
+    confirm = forms.CharField(max_length=64, label="确认密码",widget=forms.PasswordInput(render_value=True))
+    new = forms.CharField(max_length=64, label="新密码",widget=forms.PasswordInput(render_value=True))
+    class Meta:
+        model = models.User
+        fields = ["password", "new", "confirm"]
+
+    def clean_password(self):
+        password = md5(self.cleaned_data.get("password"))
+        if password != self.instance.password:
+            raise ValidationError("密码输入错误")
+        return password
+    
+    def clean_new(self):
+        new_password = md5(self.cleaned_data.get("new"))
+        return new_password
+
+    def clean_confirm(self):
+        confirm = md5(self.cleaned_data.get("confirm"))
+        new_password = self.cleaned_data.get("new")
+        if confirm != new_password:
+            raise ValidationError("两次密码输入不一致")
+        return confirm 
+
+
 class UserinfoeditForm(BootstrapModelForm):
-    confirm = forms.CharField(max_length=32, label="输入用户密码",widget=forms.PasswordInput(render_value=True))
+    confirm = forms.CharField(max_length=64, label="输入用户密码",widget=forms.PasswordInput(render_value=True))
     class Meta:
         model = models.User
         fields = ["name", "password", "confirm", "age", "gender",]
