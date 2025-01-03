@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from app1.views import main, user, lovedir
+from app1.views import statistics, user, lovedir, index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,10 +34,10 @@ urlpatterns = [
     path('add/film/', lovedir.addfilm),
     path('delete/film/', lovedir.deletefilm),
     path('edit/film/<int:filmid>/', lovedir.editfilm),
-    # path('search/film/', lovedir.searchfilm),
     
-    path('index/', main.index),
-    path('delete/film/all/', main.deletefilmall),
-    path('statistics/', main.statistics),
+    path('index/', index.index),
+    path('delete/film/all/', index.deletefilmall),
+
+    path('statistics/', statistics.statistics),
     
 ]

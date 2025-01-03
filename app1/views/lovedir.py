@@ -214,19 +214,3 @@ def editfilm(request, filmid):
         return render(request, 'filminfo.html', {'filmform':filmform})
     
     return render(request, 'filminfo.html', {'filmform':filmform})
-
-# def searchfilm(request):
-#     # 多表查询
-#     if request.method == 'POST':
-#         filmform = FilmForm()
-#         filmname = request.POST.get("name", "")
-#         dirid = request.POST.get("dirid", "")
-#         dirname = request.POST.get("dirname", "")
-#         objs = models.Include.objects.filter(dir_id = dirid)
-#         film_list = []
-#         for obj in objs:
-#             if obj.film.name == filmname:
-#                 film_list.append(obj)
-
-#         return render(request, 'dirfilms.html', {'name':get_uname(request), 'dirname':dirname, 
-#                                                  'filmset':film_list, 'dirid':dirid, 'filmform':filmform,})
