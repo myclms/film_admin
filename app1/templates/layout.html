@@ -51,8 +51,32 @@
         {% block content %}{% endblock %}
       </div>
 
+      {% comment %} 1页10个，1行最多5个 {% endcomment %}
+      <nav aria-label="Page navigation example align-bottom" style="margin-top: 15px;">
+        <ul class="pagination justify-content-center">
+          {% for pageval in pagevals %}
+            <li class="page-item"><a class="page-link" href="?page={{pageval}}&search_string={{search_string}}">{{ pageval }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+
       <script src="{% static 'plugins/bootstrapmini5.1/bootstrap.min.js' %}"></script>
       <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+      <script type="text/javascript">
+        // 分页
+        {% comment %} $(function () {
+          page_jump();
+        })
+
+        function page_jump(){
+          $(".page-item").click(function(){
+            let search_string = $("#search_input").attr("value");
+            let page = $(this).text();
+            window.location.href = "#/?page="+page+"&search_string="+search_string;
+          })
+        } {% endcomment %}
+        // 分页
+      </script>
       {% block js %}{% endblock %}
     </body>
   </html>

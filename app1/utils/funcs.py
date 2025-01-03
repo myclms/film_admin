@@ -1,3 +1,5 @@
+from django.db.models import Count
+
 from app1 import models
 
 
@@ -30,3 +32,28 @@ def get_all_film(request):
     # print(filmidset)
 
     return models.Film.objects.filter(id__in = filmidset)
+
+def get_pagvals(filmset, to_page:int):
+    """need len(filmset)    return pagevals:list"""
+    pagevals = []
+    total_cnt = len(filmset)
+    total_page = total_cnt // 10
+    if total_cnt % 10:
+        total_page += 1
+    start_page = max(1, to_page-2)
+    end_page = min(total_page, to_page+2)
+    for i in range(start_page, end_page+1):
+        pagevals.append(i)
+
+    return pagevals
+
+def complex_filter(filmset, search_string:str):
+    """return res:queryset"""
+    res = filmset.filter(name__icontains = search_string)
+    res = res.union( filmset.filter(year__icontains = search_string) )
+    res = res.union( filmset.filter(types__icontains = search_string) )
+    res = res.union( filmset.filter(nationality__icontains = search_string) )
+    res = res.union( filmset.filter(directors__icontains = search_string) )
+    res = res.union( filmset.filter(actors__icontains = search_string) )
+
+    return res

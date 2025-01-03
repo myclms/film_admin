@@ -1,14 +1,12 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django import forms
-from django.db.models import F
 from django.db.models import Count
 from urllib import parse
 
 from app1 import models
 from app1.form import FilmForm
-from app1.utils.funcs import get_uname, get_lovedirs, get_uid
+from app1.utils.funcs import get_uname, get_lovedirs, get_uid, get_pagvals, complex_filter
 
 
 
@@ -95,17 +93,38 @@ def dirfilms(request, dirid):
     dirname = models.LoveDir.objects.filter(id=dirid).first().name
     filmset = models.Include.objects.filter(dir_id=dirid)
     if request.method == 'GET':
+        to_page = request.GET.get("page","")
+        if to_page == "":
+            to_page = 1
+        else:
+            to_page = int(to_page)
+        search_string = request.GET.get("search_string","")
+        if search_string != "":
+            # filmset = filmset.filter(name__icontains = search_string)
+            film_list = []
+            for obj in filmset:
+                if search_string in obj.film.name:
+                    film_list.append(obj)
+        else:
+            film_list = filmset
+
+        pagevals = get_pagvals(film_list, to_page)
+        film_list = film_list[(to_page-1)*10 : min(to_page*10, len(film_list))]
         return render(request, 'dirfilms.html', {'name':get_uname(request), 'dirname':dirname, 
-                                                 'filmset':filmset, 'dirid':dirid, 'filmform':filmform,})
+                                                 'filmset':film_list, 'dirid':dirid, 'filmform':filmform, 
+                                                 'pagevals':pagevals, 'search_string':search_string,})
     
-    filmname = request.POST.get("name")
+    search_string = request.POST.get("name")
     film_list = []
     for obj in filmset:
-        if filmname in obj.film.name:
+        if search_string in obj.film.name:
             film_list.append(obj)
+    pagevals = get_pagvals(film_list, 1)
+    film_list = film_list[0:10]
 
     return render(request, 'dirfilms.html', {'name':get_uname(request), 'dirname':dirname, 
-                                                 'filmset':film_list, 'dirid':dirid, 'filmform':filmform, 'filmname':filmname})
+                                                 'filmset':film_list, 'dirid':dirid, 'filmform':filmform, 
+                                                 'search_string':search_string, 'pagevals':pagevals,})
     
 @csrf_exempt
 def addfilm(request):
