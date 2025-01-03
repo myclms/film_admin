@@ -34,9 +34,10 @@ urlpatterns = [
     path('add/film/', lovedir.addfilm),
     path('delete/film/', lovedir.deletefilm),
     path('edit/film/<int:filmid>/', lovedir.editfilm),
-    path('search/film/', lovedir.searchfilm),
+    # path('search/film/', lovedir.searchfilm),
     
     path('index/', main.index),
+    path('delete/film/all/', main.deletefilmall),
     path('statistics/', main.statistics),
     
 ]

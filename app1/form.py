@@ -14,7 +14,7 @@ class RegisterForm(BootstrapModelForm):
         fields = ["name", "password", "confirm", "age", "gender",]
 
         widgets = {
-            "password": forms.PasswordInput(render_value=True),
+            "password": forms.PasswordInput(render_value=True)
         }
     
     def clean_password(self):
@@ -50,26 +50,31 @@ class UserinfoeditForm(BootstrapModelForm):
         fields = ["name", "password", "confirm", "age", "gender",]
 
         widgets = {
-            "password": forms.PasswordInput(render_value=True),
+            "password": forms.PasswordInput(render_value=True, attrs={"readonly":"readonly"}),
         }
     
-    def clean_password(self):
-        password = self.cleaned_data.get("password")
-        if password == self.instance.password:
-            return password
+    # def clean_password(self):
+    #     password = self.cleaned_data.get("password")
+    #     if password == self.instance.password:
+    #         return password
         
-        return md5(password)
+    #     return md5(password)
     
     def clean_confirm(self):
         confirm = md5(self.cleaned_data.get("confirm"))
         password = self.cleaned_data.get("password")
         if confirm != password:
-            if password == self.instance.password:
-                raise ValidationError("密码错误")
-            raise ValidationError("两次输入密码不一致")
+            raise ValidationError("密码验证失败")
         return confirm 
     
 class FilmForm(BootstrapModelForm):
+    def __init__(self, dir_choices=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if dir_choices:
+            lovedir = forms.ModelMultipleChoiceField(queryset=dir_choices, widget=forms.SelectMultiple(attrs={"class":"form-control"}),
+                                                 label = "选择收藏夹", validators=[])
+            self.fields["lovedir"] = lovedir
+            
     class Meta:
         model = models.Film
-        fields = ["name", "year", "types", "nationality", "cover", "score", "comment", "directors", "actors",]
+        fields = ["name", "year", "types", "nationality", "cover", "score", "comment", "directors", "actors"]

@@ -1,24 +1,27 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django import forms
+from django.db.models import F
+from django.db.models import Count
 from urllib import parse
 
 from app1 import models
 from app1.form import FilmForm
-from app1.utils.funcs import get_uname
+from app1.utils.funcs import get_uname, get_lovedirs
 
 
 
 def dirs(request):
     # list
+    name = get_uname(request)
     if request.method == 'GET':
-        uid = request.session.get("info").get("id")
-        dirs = models.LoveDir.objects.filter(owner_id=uid)
-        return render(request, 'dirs.html', {'name':get_uname(request), 'dirs':dirs})
+        dirs = get_lovedirs(request)
+        return render(request, 'dirs.html', {'name':name, 'dirs':dirs})
     
     name = request.POST.get("name")
-    dirs = models.LoveDir.objects.filter(name=name)
-    return render(request, 'dirs.html', {'name':get_uname(request), 'dirs':dirs, 'dirname':name,})
+    dirs = models.LoveDir.objects.filter(name__icontains = name)
+    return render(request, 'dirs.html', {'name':name, 'dirs':dirs, 'dirname':name,})
 
 @csrf_exempt 
 def adddir(request):
@@ -75,8 +78,10 @@ def editdirname(request):
 
     
 def dirfilms(request, dirid):
-    # dir_film_list
-    filmform = FilmForm()
+    # dir_film_list and search
+    dir_choices = get_lovedirs(request)
+    filmform = FilmForm(dir_choices, initial = {"lovedir":[dirid]})
+
     dirname = models.LoveDir.objects.filter(id=dirid).first().name
     filmset = models.Include.objects.filter(dir_id=dirid)
     if request.method == 'GET':
@@ -86,7 +91,7 @@ def dirfilms(request, dirid):
     filmname = request.POST.get("name")
     film_list = []
     for obj in filmset:
-        if obj.film.name == filmname:
+        if filmname in obj.film.name:
             film_list.append(obj)
 
     return render(request, 'dirfilms.html', {'name':get_uname(request), 'dirname':dirname, 
@@ -96,24 +101,49 @@ def dirfilms(request, dirid):
 def addfilm(request):
     if request.method == 'POST':
         res = {"status":"success"}
-        dir_id = request.POST.get("dirid")
         form_data = parse.unquote(request.POST.get("formdata"))
         form_data = parse.parse_qs(form_data)
         for key, value in form_data.items():
-            form_data[key] = value[0]
-        filmform = FilmForm(data = form_data)
+            if key != "lovedir":
+                form_data[key] = value[0]
+            else:
+                form_data[key] = value
+
+        dir_choices = get_lovedirs(request)
+        filmform = FilmForm(dir_choices, data = form_data)
         if filmform.is_valid():
+            dir_objs = filmform.cleaned_data.get("lovedir", [])
+            # LoveDir
+            try:
+                dir_objs.update(cnt = F('cnt')+1)
+            except:
+                dir_objs.update(cnt = 1)
+            # Film
             filmform.save()
-            fid = models.Film.objects.all().last().id
-            models.Include.objects.create(film_id = fid, dir_id = dir_id)
+            # Include
+            film_id = models.Film.objects.all().last().id
+            for dir_obj in dir_objs:
+                models.Include.objects.create(dir_id = dir_obj.id, film_id = film_id) 
+
+            
+
+        # msg_list = []
+        # for _,tmp in filmform.errors.items():
+        #     msg_list.append(tmp[0])
+        # res["msg"] = "\n".join(msg_list)
+
+        # if msg_list != []:
+        #     res["status"] = "error"
 
         if filmform.has_error('name'):
             res["status"] = "error"
             res["msg"] = "电影名不能为空"
-
-        if filmform.has_error('year'):
+        elif filmform.has_error('year'):
             res["status"] = "error"
             res["msg"] = "年代必须大于或等于0"
+        elif filmform.has_error('lovedir'):
+            res["status"] = "error"
+            res["msg"] = filmform.errors["lovedir"]
 
         return JsonResponse(res)
 
@@ -123,37 +153,70 @@ def deletefilm(request):
         res = {"status":"success"}
         try:
             filmid = request.POST.get("filmid")
-            models.Film.objects.filter(id = filmid).delete()
+            dirid = request.POST.get("dirid")
+            # LoveDir
+            models.LoveDir.objects.filter(id = dirid).update(cnt = F('cnt')-1)
+            # Include
+            models.Include.objects.filter(film_id = filmid, dir_id = dirid).delete()
+            # Film
+            res = models.Include.objects.filter(film_id = filmid).aggregate(Count("id"))
+            if res["id__count"] <= 0:
+                models.Film.objects.filter(id = filmid).delete()
             return JsonResponse(res)
-        except:
+        except Exception as ex:
+            print(ex)
             res["status"] = "error"
             return JsonResponse(res)
         
 def editfilm(request, filmid):
+    dir_choices = get_lovedirs(request)
+    include_objs = models.Include.objects.filter(film_id = filmid)
+    initial_ids = [] # 包含filmid的所有收藏夹id
+    for include_obj in include_objs:
+        initial_ids.append(include_obj.dir_id)
     filmobj = models.Film.objects.filter(id = filmid).first()
     if request.method == 'GET':
-        filmform = FilmForm(instance = filmobj)
+        filmform = FilmForm(dir_choices, instance = filmobj, initial={"lovedir": initial_ids})
         return render(request, 'filminfo.html', {'filmform':filmform})
     
-    filmform = FilmForm(data = request.POST, instance = filmobj)
+    # print(request.POST.getlist("lovedir"))
+    # return HttpResponse("hello")
+
+    new_initial_ids = request.POST.getlist("lovedir")
+    filmform = FilmForm(dir_choices, data = request.POST, instance = filmobj, initial={"lovedir": new_initial_ids})
     if filmform.is_valid():
+        # Include, LoveDir
+        # print(new_initial_ids, initial_ids)
+        new_initial_ids = [int(t) for t in new_initial_ids]
+        # 新增
+        for initial_id in new_initial_ids:
+            if initial_id not in initial_ids:
+                models.Include.objects.create(dir_id = initial_id, film_id = filmid)
+                models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")+1)
+        # 删除 len(new_initial_ids)不会为0
+        for initial_id in initial_ids:
+            if initial_id not in new_initial_ids:
+                models.Include.objects.filter(dir_id = initial_id, film_id = filmid).delete()
+                models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")-1)
+
+        # Film
         filmform.save()
         return render(request, 'filminfo.html', {'filmform':filmform})
     
     return render(request, 'filminfo.html', {'filmform':filmform})
 
-def searchfilm(request):
-    # 多表查询
-    if request.method == 'POST':
-        filmform = FilmForm()
-        filmname = request.POST.get("name", "")
-        dirid = request.POST.get("dirid", "")
-        dirname = request.POST.get("dirname", "")
-        objs = models.Include.objects.filter(dir_id = dirid)
-        film_list = []
-        for obj in objs:
-            if obj.film.name == filmname:
-                film_list.append(obj)
+# def searchfilm(request):
+#     # 多表查询
+#     if request.method == 'POST':
+#         filmform = FilmForm()
+#         filmname = request.POST.get("name", "")
+#         dirid = request.POST.get("dirid", "")
+#         dirname = request.POST.get("dirname", "")
+#         objs = models.Include.objects.filter(dir_id = dirid)
+#         film_list = []
+#         for obj in objs:
+#             if obj.film.name == filmname:
+#                 film_list.append(obj)
 
-        return render(request, 'dirfilms.html', {'name':get_uname(request), 'dirname':dirname, 
-                                                 'filmset':film_list, 'dirid':dirid, 'filmform':filmform,})
+#         return render(request, 'dirfilms.html', {'name':get_uname(request), 'dirname':dirname, 
+#                                                  'filmset':film_list, 'dirid':dirid, 'filmform':filmform,})

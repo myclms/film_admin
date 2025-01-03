@@ -84,7 +84,9 @@
       </div>
     </span>
   </div>
+
   <hr />
+  
   <div class="row row-cols-1 row-cols-md-5 g-4">
     {% for filmid in filmset %}
       <div class="col">
@@ -114,7 +116,7 @@
     })
     function edit_dir_name() {
       $('#editdirname_confirm').click(function () {
-        $('#error2').text('')
+        $('#error1').text('')
         $.ajax({
           url: '/edit/dirname/',
           type: 'post',
@@ -125,7 +127,7 @@
           },
           success: function (res) {
             if (res.status == 'error') {
-              $('#error2').text(res.msg)
+              $('#error1').text(res.msg)
             } else {
               location.reload()
             }
@@ -142,7 +144,7 @@
           type: 'post',
           dataType: 'JSON',
           data: {
-            dirid: {{ dirid }},
+            // dirid: {{ dirid }},
             formdata: $('#addfilmform').serialize(),
           },
           success: function (res) {
@@ -164,6 +166,7 @@
           dataType: 'JSON',
           data: {
             filmid: $(this).attr("filmid"),
+            dirid: {{dirid}},
           },
           success: function (res) {
             if (res.status == 'error') {

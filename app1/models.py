@@ -44,6 +44,9 @@ class LoveDir(models.Model):
     name = models.CharField(max_length=32, verbose_name='收藏夹名')
     cnt = models.PositiveSmallIntegerField(verbose_name='包含电影个数', null=True, blank=True, default=0)
 
+    def __str__(self):
+        return self.name
+
 # class Direct(models.Model):
 #     # 执导（导演ID,电影ID）
 #     director = models.ForeignKey(Director, on_delete=models.CASCADE, verbose_name='导演')
