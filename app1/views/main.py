@@ -2,26 +2,30 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
-from app1 import models
 from app1.form import FilmForm
-from app1.utils.funcs import get_uname, get_lovedirs
+from app1 import models
+from app1.utils.funcs import get_uname, get_lovedirs, get_all_film
 
 
 
 # Create your views here.   
 def index(request):
+    filmset = get_all_film(request)
+    dir_choices = get_lovedirs(request)
+    filmform = FilmForm(dir_choices)
     if request.method == 'GET':
-        dir_choices = get_lovedirs(request)
-        filmform = FilmForm(dir_choices)
-        include_objs = models.Include.objects.filter(dir_id__in = dir_choices)
-        filmidset = []
-        for include_obj in include_objs:
-            filmidset.append(include_obj.film_id)
-        filmidset = list(set(filmidset))
-        # print(filmidset)
-
-        filmset = models.Film.objects.filter(id__in = filmidset)
         return render(request, 'index.html', {'name':get_uname(request), 'filmform':filmform, 'filmset':filmset,})
+    
+    # search -- more complicated
+    user_input = request.POST.get('name')
+    res = filmset.filter(name__icontains = user_input)
+    res = res.union( filmset.filter(year__icontains = user_input) )
+    res = res.union( filmset.filter(types__icontains = user_input) )
+    res = res.union( filmset.filter(nationality__icontains = user_input) )
+    res = res.union( filmset.filter(directors__icontains = user_input) )
+    res = res.union( filmset.filter(actors__icontains = user_input) )
+    return render(request, 'index.html', {'name':get_uname(request), 'filmform':filmform, 'filmset':res, 'filmname':user_input})
+
 
 def addfilmall(request):
     """ app1.vews.lovedir.addfilm """
