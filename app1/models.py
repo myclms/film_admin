@@ -1,15 +1,6 @@
 from django.db import models
 
-# Create your models here.
-# class Director(models.Model): 
-#     # 导演（ID，姓名）
-#     id = models.AutoField(primary_key=True)
-#     name = models.CharField(max_length=32, verbose_name='姓名', unique=True)
 
-# class Actor(models.Model):
-#     # 主演（ID，姓名）
-#     id = models.AutoField(primary_key=True)
-#     name = models.CharField(max_length=32, verbose_name='姓名', unique=True)
 
 class User(models.Model):
     # 用户（ID,用户名，密码，性别,年龄）
@@ -47,21 +38,6 @@ class LoveDir(models.Model):
     def __str__(self):
         return self.name
 
-# class Direct(models.Model):
-#     # 执导（导演ID,电影ID）
-#     director = models.ForeignKey(Director, on_delete=models.CASCADE, verbose_name='导演')
-#     # to="Director", to_field="id", on_delete=models.SET_NULL, null=True, blank=True
-#     film = models.ForeignKey(Film, on_delete=models.CASCADE, verbose_name='电影')
-#     class Meta:
-#         unique_together = ("director", "film")
-
-# class Act(models.Model):
-#     # 出演（主演ID,电影ID）
-#     actor = models.ForeignKey(Actor, on_delete=models.CASCADE, verbose_name='主演')
-#     film = models.ForeignKey(Film, on_delete=models.CASCADE, verbose_name='电影')
-#     class Meta:
-#         unique_together = ("actor", "film")
-
 class Include(models.Model):
     # 包含（电影ID,收藏夹ID,时间）
     dir = models.ForeignKey(LoveDir, on_delete=models.CASCADE, verbose_name='收藏夹')
@@ -69,12 +45,3 @@ class Include(models.Model):
     date = models.DateField(verbose_name="收藏时间", auto_now=True)
     class Meta:
         unique_together = ("dir", "film")
-
-# class Comment(models.Model):
-#     # 评价（用户ID,电影ID,评分,评论）
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='评论者')
-#     film = models.ForeignKey(Film, on_delete=models.CASCADE, verbose_name='电影')
-#     score = models.DecimalField(max_digits=2, decimal_places=1, verbose_name='评分') # DecimalField
-#     comment = models.CharField(max_length=256, verbose_name='评论')
-#     class Meta:
-#         unique_together = ("user", "film")

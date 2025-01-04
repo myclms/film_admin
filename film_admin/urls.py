@@ -21,6 +21,7 @@ from app1.views import statistics, user, lovedir, index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
     path('', user.login),
     path('register/', user.register),
     path('userinfoedit/', user.userinfoedit),
@@ -42,4 +43,7 @@ urlpatterns = [
     path('statistics/', statistics.statistics),
     path('bar/', statistics.bar),
     path('line/', statistics.line),
+    path('statistics_for_admin/', statistics.statistics_for_admin),
+    path('userage/', statistics.userage),
+    path('usergender/', statistics.usergender),
 ]

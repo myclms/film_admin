@@ -74,3 +74,9 @@ def get_title_x_cnt(request, title:str):
         cnt_list.append(cnt_res['cnt'])
 
     return title_map[title], xAxis, cnt_list
+
+def age_between(l:int, r:int):
+    """以字典形式返回年龄在[l,r]之间的用户数"""
+    res = models.User.objects.filter(age__range=[l,r]).aggregate(cnt = Count('id'))
+    res_dict = {'value': res['cnt'], 'name': str(l)+'-'+str(r)}
+    return res_dict

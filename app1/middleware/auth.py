@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 class AuthMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
-        if request.path_info == "/" or request.path_info == "/register/":
+        if request.path_info == "/" or request.path_info == "/register/" or request.path_info == "/statistics_for_admin/":
             return None
         if request.session.get("info"):
             return None
