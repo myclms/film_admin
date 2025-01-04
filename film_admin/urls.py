@@ -41,4 +41,5 @@ urlpatterns = [
 
     path('statistics/', statistics.statistics),
     path('bar/', statistics.bar),
+    path('line/', statistics.line),
 ]

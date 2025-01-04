@@ -2,59 +2,112 @@
 {% load static %}
 
 {% block content %}
-  <h1>统计面板</h1>
-  <div id="main" style="width: 600px;height:400px;"></div>
+  <ul class="nav nav-tabs justify-content-center" style="margin-top: 10px; margin-bottom: 15px;">
+    <li class="nav-item">
+      <a class="nav-link text-secondary" href="#" x="year">年代</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link text-secondary" href="#" x="nationality">拍摄国家</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link text-secondary" href="#" x="types">类型</a>
+    </li>
+  </ul>
+  <div class="row justify-content-center" style="height: 50vh;">
+    <div id="Bar" class="col-8"></div>
+  </div>
+  <hr />
+  <div id="time-cnt" class="row" style="height: 50vh;"></div>
 {% endblock %}
-{% comment %} 柱状图 ： 年代，类型，拍摄国家 -- 数量 {% endcomment %}
+{% comment %}柱状图 ： 年代，类型，拍摄国家 -- 数量{% endcomment %}
 {% block js %}
-<script src="{% static "js/echarts.js" %}"></script>
-<script type="text/javascript">
-  // 基于准备好的dom，初始化echarts实例
-  var Bar_year = echarts.init(document.getElementById('main'));
-
-  // 指定图表的配置项和数据
-  var Bar_option = {
-    title: {
-      text: '' //
-    },
-    tooltip: {},
-    legend: {
-      data: ['数量']
-    },
-    xAxis: {
-      data: [] // 
-    },
-    yAxis: {},
-    series: [
-      {
-        name: '数量',
-        type: 'bar',
-        data: [] //
-      }
-    ]
-  };
-
-  $(function(){
-    init_bar_year();
-  })
-
-  function init_bar_year() {
-    $.ajax({
-      url: '/bar/',
-      type: 'get',
-      dataType: 'JSON',
-      data: {
-        x: "year",
+  <script src="{% static 'js/echarts.js' %}"></script>
+  <script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var Bar = echarts.init(document.getElementById('Bar'))
+    var Bar_option = {
+      title: {
+        text: '', //
+        left: 'center'
       },
-      success: function (res) {
-        Bar_option.title.text = res.title;
-        Bar_option.xAxis.data = res.xAxis;
-        Bar_option.series[0].data = res.cnt_list
-        Bar_year.setOption(Bar_option);
-      }
+      tooltip: {},
+      legend: {
+        data: ['数量'],
+        right: 0
+      },
+      xAxis: {
+        data: [] //
+      },
+      yAxis: {},
+      series: [
+        {
+          name: '数量',
+          type: 'bar',
+          data: [] //
+        }
+      ]
+    }
+    
+    var chartDom = document.getElementById('time-cnt')
+    var myChart = echarts.init(chartDom)
+    var Line_option = {
+      xAxis: {
+        type: 'category',
+        data: [], //
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          data: [], //
+          type: 'line',
+          smooth: true
+        }
+      ]
+    }
+    
+    
+    
+    $(function () {
+      get_bar();
+      get_line();
     })
-  }
 
-  
-</script>
-{% endblock js %}
+
+
+    function get_bar() {
+      $('.nav-link').click(function () {
+        $.ajax({
+          url: '/bar/',
+          type: 'get',
+          dataType: 'JSON',
+          data: {
+            x: $(this).attr('x')
+          },
+          success: function (res) {
+            Bar_option.title.text = res.title
+            Bar_option.xAxis.data = res.xAxis
+            Bar_option.series[0].data = res.cnt_list
+            Bar.setOption(Bar_option)
+          }
+        })
+      })
+    }
+
+    function get_line() {
+      $.ajax({
+        url: '/line/',
+        type: 'get',
+        dataType: 'JSON',
+        data: {
+        },
+        success: function (res) {
+          Line_option.xAxis.data = res.xAxis
+          Line_option.series[0].data = res.cnt_list
+          Line_option && myChart.setOption(Line_option)
+        }
+      })
+    }
+  </script>
+{% endblock %}

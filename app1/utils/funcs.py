@@ -57,3 +57,20 @@ def complex_filter(filmset, search_string:str):
     res = res.union( filmset.filter(actors__icontains = search_string) )
 
     return res
+
+title_map = {
+    'year':'年代',
+    'nationality':'拍摄国家',
+    'types':'类型',
+}
+
+def get_title_x_cnt(request, title:str):
+    xAxis = []
+    cnt_list = []
+    filmset = get_all_film(request)
+    cnt_res_set = filmset.values(title).annotate(cnt = Count("id"))
+    for cnt_res in cnt_res_set:
+        xAxis.append(cnt_res[title])
+        cnt_list.append(cnt_res['cnt'])
+
+    return title_map[title], xAxis, cnt_list
