@@ -58,25 +58,31 @@ def complex_filter(filmset, search_string:str):
 
     return res
 
-title_map = {
-    'year':'年代',
-    'nationality':'拍摄国家',
-    'types':'类型',
-}
-
-def get_title_x_cnt(request, title:str):
-    xAxis = []
-    cnt_list = []
-    filmset = get_all_film(request)
-    cnt_res_set = filmset.values(title).annotate(cnt = Count("id"))
-    for cnt_res in cnt_res_set:
-        xAxis.append(cnt_res[title])
-        cnt_list.append(cnt_res['cnt'])
-
-    return title_map[title], xAxis, cnt_list
-
 def age_between(l:int, r:int):
     """以字典形式返回年龄在[l,r]之间的用户数"""
     res = models.User.objects.filter(age__range=[l,r]).aggregate(cnt = Count('id'))
     res_dict = {'value': res['cnt'], 'name': str(l)+'-'+str(r)}
     return res_dict
+
+def get_it(filmset, title:str):
+    """return xAxis and cnt_list for line(types, directors, actors)"""
+    xAxis = []
+    cnt_list = []
+    cnt_dict = {}
+    for targets in filmset.values(title):
+        try:
+            targets = [t.strip() for t in targets.get(title, "").split('/') if t != '']
+        except:
+            targets = ['None']
+        # print(targets)
+        for target in targets:
+            try:
+                cnt_dict[target] += 1
+            except:
+                cnt_dict[target] = 1
+    # print(cnt_dict)
+    for target, cnt in cnt_dict.items():
+        xAxis.append(target)
+        cnt_list.append(cnt)
+
+    return xAxis, cnt_list

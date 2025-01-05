@@ -5,7 +5,12 @@ from django.db.models.functions import ExtractMonth
 from datetime import datetime
 
 from app1 import models
-from app1.utils.funcs import get_uname, get_title_x_cnt, get_lovedirs, age_between
+from app1.utils.funcs import get_uname, get_lovedirs, age_between, get_all_film, get_it
+title_map = {
+    'year':'年代',
+    'nationality':'拍摄国家',
+    'types':'类型',
+}
 
 
 
@@ -18,8 +23,26 @@ def bar(request):
     title = request.GET.get("x")
     xAxis = []
     cnt_list = []
+    filmset = get_all_film(request)
 
-    title, xAxis, cnt_list = get_title_x_cnt(request, title)
+    if title == 'year':
+        current_year = datetime.now().year
+        start_year = 1900
+        gap = 10
+        # xAxis = ['1900-1910', '1910-1920', ]
+        while start_year <= current_year:
+            end_year = min(start_year+gap, current_year)
+            xAxis.append(str(start_year)+'-'+str(end_year))
+            cnt_list.append(filmset.filter(year__range = [start_year, end_year]).aggregate(cnt = Count('id')).get('cnt', 0))
+            start_year += gap
+    elif title == 'nationality':
+        cnt_res_set = filmset.values(title).annotate(cnt = Count("id"))
+        for cnt_res in cnt_res_set:
+            xAxis.append(cnt_res[title])
+            cnt_list.append(cnt_res['cnt'])
+    elif title == 'types' or title == 'directors' or title == 'actors':
+        xAxis, cnt_list = get_it(filmset, title)
+
 
     return JsonResponse({
         'title': title,

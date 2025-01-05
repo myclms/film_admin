@@ -24,9 +24,9 @@ class Film(models.Model):
     nationality = models.CharField(max_length=16, verbose_name='拍摄国家', null=True, blank=True)
     cover = models.CharField(max_length=128, verbose_name='封面链接', null=True, blank=True)
     score = models.DecimalField(max_digits=2, decimal_places=1, verbose_name='评分', null=True, blank=True, default=0) # DecimalField
-    comment = models.CharField(max_length=256, verbose_name='评论', null=True, blank=True, default="暂无评论")
-    directors = models.CharField(max_length=64, verbose_name='导演列表', null=True, blank=True, default="暂无")
-    actors = models.CharField(max_length=64, verbose_name='主演列表', null=True, blank=True, default="暂无")
+    comment = models.CharField(max_length=512, verbose_name='评论', null=True, blank=True, default="暂无评论")
+    directors = models.CharField(max_length=64, verbose_name='导演列表', null=True, blank=True)
+    actors = models.CharField(max_length=128, verbose_name='主演列表', null=True, blank=True)
 
 class LoveDir(models.Model):
     # 收藏夹（ID,用户ID,名字,包含电影个数） cnt可能为不准确的数据，删除或增加Include是未更改（sql触发器把所有计数全加到最后一行），只在展示给用户时更新

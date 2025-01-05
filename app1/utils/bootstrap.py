@@ -8,7 +8,7 @@ class BootStrap:
         
         for name, field in self.fields.items():
             if field.widget.attrs:
-                field.widget.attrs["class"] = "form-control"
+                field.widget.attrs["class"] = " form-control"
                 field.widget.attrs["placeholder"] = field.label
             else:
                 field.widget.attrs = {

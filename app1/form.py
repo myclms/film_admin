@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 
 from app1 import models
 from app1.utils.bootstrap import BootstrapModelForm, BootstrapForm
@@ -104,3 +105,42 @@ class FilmForm(BootstrapModelForm):
     class Meta:
         model = models.Film
         fields = ["name", "year", "types", "nationality", "cover", "score", "comment", "directors", "actors"]
+
+    def clean_types(self):
+        data = self.cleaned_data.get("types", "")
+        if type(data) != type(""):
+            if data == None:
+                data = "暂无"
+            else:
+                data = str(data)
+        if '/' in data or data == "" or data == "暂无":
+            pass
+        else:
+            raise ValidationError("影片类型输入格式保证为 : 类型 / 类型 / ...,只有一个类型也请在最后加'/'")
+        return data
+    
+    def clean_directors(self):
+        data = self.cleaned_data.get("directors", "")
+        if type(data) != type(""):
+            if data == None:
+                data = "暂无"
+            else:
+                data = str(data)
+        if '/' in data or data == "" or data == "暂无":
+            pass
+        else:
+            raise ValidationError("导演列表输入格式保证为 : 类型 / 类型 / ...,只有一位导演也请在最后加'/'")
+        return data
+    
+    def clean_actors(self):
+        data = self.cleaned_data.get("actors", "")
+        if type(data) != type(""):
+            if data == None:
+                data = "暂无"
+            else:
+                data = str(data)
+        if '/' in data or data == "" or data == "暂无":
+            pass
+        else:
+            raise ValidationError("主演列表输入格式保证为 : 类型 / 类型 / ...,只有一位主演也请在最后加'/'")
+        return data

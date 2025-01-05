@@ -142,17 +142,23 @@ def addfilm(request):
         filmform = FilmForm(dir_choices, data = form_data)
         if filmform.is_valid():
             dir_objs = filmform.cleaned_data.get("lovedir", [])
-            # # LoveDir
-            # try:
-            #     dir_objs.update(cnt = F('cnt')+1)
-            # except:
-            #     dir_objs.update(cnt = 1)
-            # Film
-            filmform.save()
-            # Include
-            film_id = models.Film.objects.all().last().id
-            for dir_obj in dir_objs:
-                models.Include.objects.create(dir_id = dir_obj.id, film_id = film_id) 
+            if len(dir_objs) == 0:
+                res["status"] = "error"
+                res["msg"] = "请创建收藏夹"
+            else:
+                # # LoveDir
+                # try:
+                #     dir_objs.update(cnt = F('cnt')+1)
+                # except:
+                #     dir_objs.update(cnt = 1)
+                # Film
+                print(form_data)
+
+                filmform.save()
+                # Include
+                film_id = models.Film.objects.all().last().id
+                for dir_obj in dir_objs:
+                    models.Include.objects.create(dir_id = dir_obj.id, film_id = film_id) 
 
             
 
@@ -173,6 +179,16 @@ def addfilm(request):
         elif filmform.has_error('lovedir'):
             res["status"] = "error"
             res["msg"] = filmform.errors["lovedir"]
+        elif filmform.has_error('types'):
+            res["status"] = "error"
+            res["msg"] = filmform.errors["types"]
+        elif filmform.has_error('directors'):
+            res["status"] = "error"
+            res["msg"] = filmform.errors["directors"]
+        elif filmform.has_error('types'):
+            res["status"] = "actors"
+            res["msg"] = filmform.errors["actors"]
+
 
         return JsonResponse(res)
 
@@ -214,19 +230,16 @@ def editfilm(request, filmid):
     new_initial_ids = request.POST.getlist("lovedir")
     filmform = FilmForm(dir_choices, data = request.POST, instance = filmobj, initial={"lovedir": new_initial_ids})
     if filmform.is_valid():
-        # Include, LoveDir
-        # print(new_initial_ids, initial_ids)
+        # Include
         new_initial_ids = [int(t) for t in new_initial_ids]
         # 新增
         for initial_id in new_initial_ids:
             if initial_id not in initial_ids:
                 models.Include.objects.create(dir_id = initial_id, film_id = filmid)
-                # models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")+1)
         # 删除 len(new_initial_ids)不会为0
         for initial_id in initial_ids:
             if initial_id not in new_initial_ids:
                 models.Include.objects.filter(dir_id = initial_id, film_id = filmid).delete()
-                # models.LoveDir.objects.filter(id = initial_id).update(cnt = F("cnt")-1)
 
         # Film
         filmform.save()
