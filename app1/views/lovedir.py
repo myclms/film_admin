@@ -185,10 +185,9 @@ def addfilm(request):
         elif filmform.has_error('directors'):
             res["status"] = "error"
             res["msg"] = filmform.errors["directors"]
-        elif filmform.has_error('types'):
-            res["status"] = "actors"
+        elif filmform.has_error('actors'):
+            res["status"] = "error"
             res["msg"] = filmform.errors["actors"]
-
 
         return JsonResponse(res)
 
